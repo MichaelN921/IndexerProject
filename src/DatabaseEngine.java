@@ -1,15 +1,16 @@
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class DatabaseEngine {
     public static void writeBinaryFile(String fileLocation, List<String> fileData){
         File file = new File(fileLocation);
-        File index = new File("IndexerProject/src/index.out");
+        File index = new File("src/index.out");
 
         try (RandomAccessFile data = new RandomAccessFile(file, "rw");
              RandomAccessFile i = new RandomAccessFile(index, "rw"))
@@ -32,7 +33,7 @@ public class DatabaseEngine {
 
     public static List<Integer> readBinaryFile(String fileLocation, int id) {
         File file = new File(fileLocation);
-        File index = new File("IndexerProject/src/index.out");
+        File index = new File("src/index.out");
         List<Integer> fileData = new ArrayList<>();
         List<String> fileIndex = new ArrayList<>();
 
@@ -55,7 +56,6 @@ public class DatabaseEngine {
                     }
                 }
             }
-
         }
         catch (IOException e){
             e.printStackTrace();
@@ -72,7 +72,7 @@ public class DatabaseEngine {
         fileData.add("Hello");
         fileData.add("Test");
 //        writeBinaryFile("IndexerProject/src/test.out", fileData);
-        List<Character> data = asciiToCharArray(readBinaryFile("IndexerProject/src/data.out", 14));
+        List<Character> data = asciiToCharArray(readBinaryFile("src/data.out", 14));
         data.forEach(System.out::print);
     }
 
