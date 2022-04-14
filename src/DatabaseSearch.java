@@ -8,19 +8,20 @@ public class DatabaseSearch extends JFrame implements ActionListener {
     JTextField tf, tf1, tf2;
     JLabel label;
     JButton b;
+    final JComboBox<String> cb;
 
     DatabaseSearch() {
         f = new JFrame("Pokedex DataBase");
-        JLabel label = new JLabel();
+        label = new JLabel();
         label.setHorizontalAlignment(JLabel.CENTER);
         label.setSize(400,100);
 
-        JButton b = new JButton("Search");
+        b = new JButton("Search");
         b.setBounds(200,100,75,20);
         b.addActionListener(this);
 
         String[] searches = {"Exact Match","Range Query"};
-        final JComboBox cb = new JComboBox(searches);
+        cb = new JComboBox<>(searches);
         cb.setBounds(50,100,90,20);
 
         f.add(cb); f.add(label); f.add(b);
@@ -28,15 +29,17 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         f.setSize(350,350);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setVisible(true);
+        comboBoxAction();
 
-        cb.addActionListener(e -> {
-            String data = "" + cb.getItemAt(cb.getSelectedIndex());
-            label.setText(data);
+        cb.addActionListener(e -> comboBoxAction());
+    }
 
-            updateSearch(data);
-            updateFrame();
-        });
-        b.addActionListener(this);
+    public void comboBoxAction(){
+        String data = "" + cb.getItemAt(cb.getSelectedIndex());
+        label.setText(data);
+
+        updateSearch(data);
+        updateFrame();
     }
 
     public void updateSearch(String search) {
@@ -56,7 +59,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
 
     public void updateFrame() {
         if (toggle.equals("exact")) {
-            if (tf1.isVisible() && tf2.isVisible()) {
+            if (tf1 != null && tf1.isVisible() && tf2.isVisible()) {
                 f.remove(tf1); f.remove(tf2);
                 revalidate();
                 repaint();
