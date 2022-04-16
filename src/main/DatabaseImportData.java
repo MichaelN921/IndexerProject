@@ -1,3 +1,5 @@
+package main;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,13 +25,11 @@ public class DatabaseImportData {
     }
 
     public static void writeBinary(List<String> fileData){
-        DatabaseEngine.writeBinaryFile("src/data.out", fileData);
-
+        DatabaseEngine.writeBinaryFile("src/main/data.out", fileData);
     }
 
 
     public static void main(String[] args) {
-        writeBinary(readFile("src/Pokemon.csv"));
-
+        writeBinary(readFile("src/main/Pokemon.csv"));
     }
 }

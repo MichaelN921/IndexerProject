@@ -1,4 +1,4 @@
-#,Name,Type 1,Total,HP,Attack,Defense,Sp. Atk,Sp. Def,Speed,Generation,Legendary
+#,Name,Type,Total,HP,Attack,Defense,Sp. Atk,Sp. Def,Speed,Generation,Legendary
 1,Bulbasaur,Grass,318,45,49,49,65,65,45,1,false
 2,Ivysaur,Grass,405,60,62,63,80,80,60,1,false
 3,Venusaur,Grass,525,80,82,83,100,100,80,1,false
