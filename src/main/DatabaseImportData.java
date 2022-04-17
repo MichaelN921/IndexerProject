@@ -25,7 +25,7 @@ public class DatabaseImportData {
     }
 
     public static void writeBinary(List<String> fileData){
-        DatabaseEngine.writeBinaryFile("src/main/data.out", fileData);
+        DatabaseEngine.writeBinaryFile("src/main/pokemon.data", fileData);
     }
 
 

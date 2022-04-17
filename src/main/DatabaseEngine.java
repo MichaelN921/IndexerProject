@@ -60,7 +60,7 @@ public class DatabaseEngine {
         }
     }
 
-    public static boolean isNumeric(String strNum) {
+    private static boolean isNumeric(String strNum) {
         if (strNum == null) {
             return false;
         }
@@ -74,93 +74,69 @@ public class DatabaseEngine {
 
 
     public static void writeBinaryFile(String fileLocation, List<String> fileData){
-        File file = new File(fileLocation);
-        File index = new File("src/main/index.out");
+        File dataFile = new File(fileLocation);
+        File indexFile = new File("src/main/pokemon.index");
 
-        try (RandomAccessFile data = new RandomAccessFile(file, "rw");
-             RandomAccessFile i = new RandomAccessFile(index, "rw"))
+        try (RandomAccessFile data = new RandomAccessFile(dataFile, "rw");
+             RandomAccessFile index = new RandomAccessFile(indexFile, "rw"))
         {
-            long b = 0;
+            long startingByte = 0;
             int entry = 0;
             for(String line : fileData){
                 String[] props = line.split(",");
-                int propInt;
-                boolean propBool;
-                int len = 0;
+                int entryByteLen = 0;
                 for(String prop : props){
-                    if (isNumeric(prop)) {
-                        propInt = Integer.parseInt(prop);
-                        data.writeInt(propInt);
-                        len+=4;
-                    }
-                    else if ("true".equals(prop) || "false".equals(prop)) {
-                        propBool = "true".equals(prop);
-                        data.writeBoolean(propBool);
-                        len+=1;
-                    }
-                    else {
-                        data.writeInt(prop.length());
-                        data.writeChars(prop);
-                        // a char is 2 bytes, an int is 4
-                        len += (prop.length() * 2) + 4;
-                    }
+                    entryByteLen += writeData(prop, data);
                 }
-                i.writeInt(entry);
-                i.writeLong(b);
-                b += len;
+                index.writeInt(entry);
+                index.writeLong(startingByte);
+                startingByte += entryByteLen;
                 entry++;
             }
             // indicates end of index file
-            i.writeInt(-1);
+            index.writeInt(-1);
         }
         catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    private static int writeData(String prop, RandomAccessFile data) throws IOException {
+        int propInt;
+        boolean propBool;
+        int len = 0;
+        if (isNumeric(prop)) {
+            propInt = Integer.parseInt(prop);
+            data.writeInt(propInt);
+            // ints are 4 bytes
+            len+=4;
+        }
+        else if ("true".equals(prop) || "false".equals(prop)) {
+            propBool = "true".equals(prop);
+            data.writeBoolean(propBool);
+            // boolean is 1 byte
+            len+=1;
+        }
+        else {
+            data.writeInt(prop.length());
+            data.writeChars(prop);
+            // a char is 2 bytes, an int is 4
+            len += (prop.length() * 2) + 4;
+        }
+        return len;
+    }
+
     public static Pokemon readBinaryFile(String fileLocation, int id) {
         File file = new File(fileLocation);
-        File index = new File("src/main/index.out");
+        File index = new File("src/main/pokemon.index");
 
         try (RandomAccessFile data = new RandomAccessFile(file, "rw");
              RandomAccessFile in = new RandomAccessFile(index, "rw"))
         {
-            int numChars;
-            List<Character> charList;
             int nextInt;
             while ((nextInt = in.readInt()) != -1){
                 if (nextInt == id){
-                    long offset = in.readLong();
-                    data.seek(offset);
-                    int number = data.readInt();
-
-                    numChars = data.readInt();
-                    charList = new ArrayList<>();
-                    for (int i=0;i<numChars;i++){
-                        charList.add(data.readChar());
-                    }
-                    String name = charArrayToString(charList);
-
-                    numChars = data.readInt();
-                    charList = new ArrayList<>();
-                    for (int i=0;i<numChars;i++){
-                        charList.add(data.readChar());
-                    }
-                    String type = charArrayToString(charList);
-
-                    int total = data.readInt();
-                    int hp = data.readInt();
-                    int attack = data.readInt();
-                    int defense = data.readInt();
-                    int spAttack = data.readInt();
-                    int spDefense = data.readInt();
-                    int speed = data.readInt();
-                    int gen = data.readInt();
-                    boolean legendary = data.readBoolean();
-
-                    return new Pokemon(number, name, type, total, hp,
-                                                attack, defense, spAttack, spDefense,
-                                                speed, gen, legendary);
+                    return readPokemon(in.readLong(), data);
                 }
             }
         }
@@ -170,8 +146,38 @@ public class DatabaseEngine {
         return null;
     }
 
+    private static Pokemon readPokemon(long offset, RandomAccessFile data) throws IOException {
+        data.seek(offset);
+
+        int number = data.readInt();
+        String name = readString(data);
+        String type = readString(data);
+        int total = data.readInt();
+        int hp = data.readInt();
+        int attack = data.readInt();
+        int defense = data.readInt();
+        int spAttack = data.readInt();
+        int spDefense = data.readInt();
+        int speed = data.readInt();
+        int gen = data.readInt();
+        boolean legendary = data.readBoolean();
+
+        return new Pokemon(number, name, type, total, hp,
+                attack, defense, spAttack, spDefense,
+                speed, gen, legendary);
+    }
+
+    private static String readString(RandomAccessFile data) throws IOException {
+        int numChars = data.readInt();
+        List<Character> charList = new ArrayList<>();
+        for (int i=0;i<numChars;i++){
+            charList.add(data.readChar());
+        }
+        return charArrayToString(charList);
+    }
+
     // no longer needed but still cool (will delete later if not needed for anything)
-    public static List<Character> asciiToCharArray(List<Integer> asciiValues){
+    private static List<Character> asciiToCharArray(List<Integer> asciiValues){
         return asciiValues.stream().map(v -> (char) ((int) v)).toList();
     }
 
@@ -180,8 +186,8 @@ public class DatabaseEngine {
     }
 
     public static void main(String[] args) {
-        writeBinaryFile("src/main/data.out", DatabaseImportData.readFile("src/main/Pokemon.csv"));
-        System.out.println(readBinaryFile("src/main/data.out", 100));
+        writeBinaryFile("src/main/pokemon.data", DatabaseImportData.readFile("src/main/Pokemon.csv"));
+        System.out.println(readBinaryFile("src/main/pokemon.data", 100));
     }
 
 }
