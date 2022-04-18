@@ -208,9 +208,9 @@ public class DatabaseEngine {
         return charList.stream().map(String::valueOf).collect(Collectors.joining());
     }
 
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         writeBinaryFile("src/main/pokemon.data", DatabaseImportData.readFile("src/main/Pokemon.csv"));
         System.out.println(readBinaryFile("src/main/pokemon.data", 100));
-    }
+    }*/
 
 }
