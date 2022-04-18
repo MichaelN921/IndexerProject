@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class DatabaseSearch extends JFrame implements ActionListener {
     String toggle = null;
@@ -14,6 +15,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
     JButton b;
     final JComboBox<String> cb;
     HashMap<String, Integer> pokemonIndex;
+    DatabaseTree indexTree;
 
     DatabaseSearch() {
         f = new JFrame("Pokedex DataBase");
@@ -37,7 +39,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         comboBoxAction();
 
         cb.addActionListener(e -> comboBoxAction());
-        populateHashMap();
+        //populateHashMap();
     }
 
     public void comboBoxAction(){
@@ -80,13 +82,33 @@ public class DatabaseSearch extends JFrame implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        try {
-            String name = tf.getText();
-            int number = pokemonIndex.get(name);
-            label.setText(DatabaseEngine.readBinaryFile("src/main/pokemon.data", number).toString());
-        } catch (Exception ex) {
-            System.out.println(ex);
+        if (Objects.equals(toggle, "exact")) {
+            populateHashMap();
+            try {
+                String name = tf.getText();
+                int number = pokemonIndex.get(name);
+                label.setText(DatabaseEngine.readBinaryFile("src/main/pokemon.data", number).toString());
+            } catch (Exception ex) {
+                System.out.println(ex);
+            }
+        } else if (Objects.equals(toggle, "range")) {
+            try {
+                String name1 = tf1.getText();
+                String name2 = tf2.getText();
+                //int number1 = indexTree.;
+                //int number2 = BST;
+
+                System.out.println("RANGE!!");
+            } catch (Exception ex) {
+                System.out.println(ex);
+            }
         }
+    }
+
+    private void populateTree() {
+        indexTree = new DatabaseTree();
+
+        //for (int data : )
     }
 
     private void populateHashMap(){
@@ -100,5 +122,6 @@ public class DatabaseSearch extends JFrame implements ActionListener {
 
     public static void main(String[] args) {
         DatabaseSearch db = new DatabaseSearch();
+        DatabaseEngine.writeBinaryFile("src/main/pokemon.data", DatabaseImportData.readFile("src/main/Pokemon.csv"));
     }
 }
