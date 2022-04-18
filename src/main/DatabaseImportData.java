@@ -28,8 +28,7 @@ public class DatabaseImportData {
         DatabaseEngine.writeBinaryFile("src/main/pokemon.data", fileData);
     }
 
-
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         writeBinary(readFile("src/main/Pokemon.csv"));
-    }
+    }*/
 }
