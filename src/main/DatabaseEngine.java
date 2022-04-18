@@ -6,6 +6,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.zip.DeflaterOutputStream;
 
 public class DatabaseEngine {
 
@@ -139,6 +140,28 @@ public class DatabaseEngine {
                     return readPokemon(in.readLong(), data);
                 }
             }
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static List<Pokemon> readEntireBinaryFile(String fileLocation){
+        File file = new File(fileLocation);
+        File index = new File("src/main/pokemon.index");
+
+        try (RandomAccessFile data = new RandomAccessFile(file, "rw");
+             RandomAccessFile in = new RandomAccessFile(index, "rw"))
+        {
+            List<Pokemon> pokemon = new ArrayList<>();
+            // skip the first line which is a header
+            in.readInt();
+            in.readLong();
+            while (in.readInt() != -1){
+                pokemon.add(readPokemon(in.readLong(), data));
+            }
+            return pokemon;
         }
         catch (IOException e){
             e.printStackTrace();

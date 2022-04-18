@@ -3,6 +3,8 @@ package main;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.List;
 
 public class DatabaseSearch extends JFrame implements ActionListener {
     String toggle = null;
@@ -11,6 +13,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
     JLabel label;
     JButton b;
     final JComboBox<String> cb;
+    HashMap<String, Integer> pokemonIndex;
 
     DatabaseSearch() {
         f = new JFrame("Pokedex DataBase");
@@ -34,6 +37,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         comboBoxAction();
 
         cb.addActionListener(e -> comboBoxAction());
+        populateHashMap();
     }
 
     public void comboBoxAction(){
@@ -76,14 +80,23 @@ public class DatabaseSearch extends JFrame implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-            try {
-                String host = tf.getText();
-                String ip = java.net.InetAddress.getByName(host).getHostAddress();
-                label.setText("IP of "+host+" is: "+ip);
-            } catch (Exception ex) {
-                System.out.println(ex);
-            }
+        try {
+            String name = tf.getText();
+            int number = pokemonIndex.get(name);
+            label.setText(DatabaseEngine.readBinaryFile("src/main/pokemon.data", number).toString());
+        } catch (Exception ex) {
+            System.out.println(ex);
         }
+    }
+
+    private void populateHashMap(){
+        pokemonIndex = new HashMap<>();
+
+        List<DatabaseEngine.Pokemon> pokemonList = DatabaseEngine.readEntireBinaryFile("src/main/pokemon.data");
+        if (pokemonList != null) {
+            pokemonList.forEach(e -> pokemonIndex.put(e.name(), e.number()));
+        }
+    }
 
     public static void main(String[] args) {
         DatabaseSearch db = new DatabaseSearch();
