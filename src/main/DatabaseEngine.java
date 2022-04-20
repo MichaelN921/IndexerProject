@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
-import java.util.zip.DeflaterOutputStream;
 
 public class DatabaseEngine {
 
-    public record Pokemon(int number, String name, String type, int total, int hp, int attack, int defence, int spAttack, int spDefence, int speed, int generation, boolean legendary){
+    public record Pokemon(int number, String name, String type, int total, int hp, int attack, int defense, int spAttack, int spDefense, int speed, int generation, boolean legendary){
         @Override
         public int number() {
             return number;
@@ -36,16 +36,15 @@ public class DatabaseEngine {
             return attack;
         }
         @Override
-        public int defence() {
-            return defence;
+        public int defense() {
+            return defense;
         }
         @Override
         public int spAttack() {
             return spAttack;
         }
-        @Override
-        public int spDefence() {
-            return spDefence;
+        public int spDefense() {
+            return spDefense;
         }
         @Override
         public int speed() {
