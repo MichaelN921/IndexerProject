@@ -80,7 +80,7 @@ public class DatabaseEngine {
         try (RandomAccessFile data = new RandomAccessFile(dataFile, "rw");
              RandomAccessFile index = new RandomAccessFile(indexFile, "rw"))
         {
-            long startingByte = 0;
+            long byteIndex = 0;
             int entry = 0;
             for(String line : fileData){
                 String[] props = line.split(",");
@@ -89,8 +89,8 @@ public class DatabaseEngine {
                     entryByteLen += writeData(prop, data);
                 }
                 index.writeInt(entry);
-                index.writeLong(startingByte);
-                startingByte += entryByteLen;
+                index.writeLong(byteIndex);
+                byteIndex += entryByteLen;
                 entry++;
             }
             // indicates end of index file
@@ -138,6 +138,7 @@ public class DatabaseEngine {
                 if (nextInt == id){
                     return readPokemon(in.readLong(), data);
                 }
+                in.readLong();
             }
         }
         catch (IOException e){
