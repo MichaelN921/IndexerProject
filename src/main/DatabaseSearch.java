@@ -22,7 +22,8 @@ public class DatabaseSearch extends JFrame implements ActionListener {
     JLabel label, label1, label2, errorName, errorNum, errorNumSize;
     final JComboBox<String> cb;
     Map<String, Integer> pokemonIndex;
-    NavigableMap<Integer, List<Integer>> indexTree;
+    TreeMap<Integer, List<Integer>> indexTree;
+    static String dataFileLocation = "src/main/pokemon.data";
 
     DatabaseSearch() {
         f = new JFrame("Pokedex DataBase");
@@ -44,10 +45,14 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         tf = new JTextField();
         tf.setBounds(85,75,150,20);
         tf.setToolTipText("Enter Charmander");
+        // fires when enter is pushed, can add to other tf but will need other validation
+        tf.addActionListener(this);
 
         tf1 = new JTextField(); tf2 = new JTextField();
         tf1.setBounds(50,75,100,20);
         tf2.setBounds(200,75,100,20);
+        tf1.setToolTipText("Enter 20");
+        tf2.setToolTipText("Enter 50");
 
         label = new JLabel("Enter Pokemon Name");
         label.setBounds(97, 55, 150, 20);
@@ -71,7 +76,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         f.add(label); f.add(label1); f.add(label2);
         f.add(errorName); f.add(errorNum); f.add(errorNumSize);
         f.setLayout(null);
-        f.setSize(650,650);
+        f.setSize(650,450);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setVisible(true);
 
@@ -103,6 +108,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
             tf.setVisible(true);
             tf1.setVisible(false);
             tf2.setVisible(false);
+            tableModel.setRowCount(0);
             toggle = "exact";
             revalidate();
             repaint();
@@ -113,6 +119,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
             tf1.setVisible(true);
             tf2.setVisible(true);
             tf.setVisible(false);
+            tableModel.setRowCount(0);
             toggle = "range";
             revalidate();
             repaint();
@@ -162,7 +169,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
                 if (checkName(name)) {
                     errorName.setVisible(false);
                     int number = pokemonIndex.get(name);
-                    DatabaseEngine.Pokemon pokemon = readBinaryFile("src/main/pokemon.data", number);
+                    DatabaseEngine.Pokemon pokemon = readBinaryFile(dataFileLocation, number);
                     tableModel.addRow(new Object[]{pokemon.number(), pokemon.name(), pokemon.type(),
                             pokemon.total(), pokemon.hp(), pokemon.attack(), pokemon.defense(), pokemon.spAttack(),
                             pokemon.spDefense(), pokemon.speed(), pokemon.generation(), pokemon.legendary()});
@@ -182,7 +189,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
                         if(indexTree.get(i) != null){
                             List<Integer> numbers = indexTree.get(i);
                             for (int number : numbers){
-                                pokemon = readBinaryFile("src/main/pokemon.data", number);
+                                pokemon = readBinaryFile(dataFileLocation, number);
                                 tableModel.addRow(new Object[]{pokemon.number(), pokemon.name(), pokemon.type(),
                                         pokemon.total(), pokemon.hp(), pokemon.attack(), pokemon.defense(), pokemon.spAttack(),
                                         pokemon.spDefense(), pokemon.speed(), pokemon.generation(), pokemon.legendary()});
@@ -198,7 +205,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
 
     private void populateTree() {
         indexTree = new TreeMap<>();
-        List<DatabaseEngine.Pokemon> pokemonList = DatabaseEngine.readEntireBinaryFile("src/main/pokemon.data");
+        List<DatabaseEngine.Pokemon> pokemonList = DatabaseEngine.readEntireBinaryFile(dataFileLocation);
         List<Integer> numbers;
         if (pokemonList != null) {
             for (DatabaseEngine.Pokemon pokemon: pokemonList) {
@@ -216,7 +223,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
 
     private void populateHashMap(){
         pokemonIndex = new DatabaseHashMap<>();
-        List<DatabaseEngine.Pokemon> pokemonList = DatabaseEngine.readEntireBinaryFile("src/main/pokemon.data");
+        List<DatabaseEngine.Pokemon> pokemonList = DatabaseEngine.readEntireBinaryFile(dataFileLocation);
         if (pokemonList != null) {
             pokemonList.forEach(e -> pokemonIndex.put(e.name(), e.number()));
         }
@@ -224,6 +231,6 @@ public class DatabaseSearch extends JFrame implements ActionListener {
 
     public static void main(String[] args) {
         DatabaseSearch db = new DatabaseSearch();
-        DatabaseEngine.writeBinaryFile("src/main/pokemon.data", DatabaseImportData.readFile("src/main/Pokemon.csv"));
+        DatabaseEngine.writeBinaryFile(dataFileLocation, DatabaseImportData.readFile("src/main/Pokemon.csv"));
     }
 }
