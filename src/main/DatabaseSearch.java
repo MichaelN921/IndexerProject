@@ -10,6 +10,13 @@ import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 import static main.DatabaseEngine.readBinaryFile;
 
+/*
+ * This class contains the main method for the database.
+ * It creates a GUI and allows for both a range and exact search through the data.
+ *
+ * @author Josiah Kowalski and Michael Nasuti
+ * @version 0.5
+ */
 public class DatabaseSearch extends JFrame implements ActionListener {
     String toggle = null;
     JFrame f;
@@ -24,6 +31,9 @@ public class DatabaseSearch extends JFrame implements ActionListener {
     TreeMap<Integer, List<Integer>> indexTree;
     static String dataFileLocation = "src/main/pokemon.data";
 
+    /*
+    Constructor for GUI objects.
+     */
     DatabaseSearch() {
         f = new JFrame("Pokedex DataBase");
 
@@ -91,11 +101,17 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         populateTree();
     }
 
+    /*
+    Retrieves selected index from drop-down box and updates search.
+     */
     public void comboBoxAction(){
         String data = "" + cb.getItemAt(cb.getSelectedIndex());
         updateSearch(data);
     }
 
+    /*
+    Updates the GUI based on the selected search type from the drop-down box.
+     */
     public void updateSearch(String search) {
         clearErrors();
         if (search.equals("Exact Match")) {
@@ -123,10 +139,19 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         }
     }
 
+    /*
+    Clear rows in the data table.
+     */
     private void clearRows(){
         tableModel.setRowCount(0);
     }
 
+    /*
+    Loops through the given name to ensure it is captitalized correctly.
+    @param name  User input string
+    @return true  If correctly capitalized
+    @return false  If incorrectly capitalized
+     */
     public boolean checkName(String name) {
         char[] check = name.toCharArray();
         for (char c : check) {
@@ -136,6 +161,13 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         } return false;
     }
 
+    /*
+    Checks if the min HP is less than max HP.  Prints error message.
+    @param num1  min HP input
+    @param num2  max HP input
+    @return true
+    @return false
+     */
     public boolean checkNum(int num1, int num2) {
         if (num1<num2) {
             return true;
@@ -144,16 +176,27 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         } return false;
     }
 
+    /*
+    Sets error messages when user inputs something wrong.  Errors point toward solution.
+    @param message  Text hint to be printed
+     */
     public void setError(String message) {
         lblError.setText(message);
         lblError.setVisible(true);
     }
 
+    /*
+    Clears all errors whenever the GUI is refreshed.
+     */
     public void clearErrors() {
         lblError.setVisible(false);
         errorNum.setVisible(false);
     }
 
+    /*
+    Listens to which type of search is selected and the data that is input.  Decides how to process data from there.
+    @param e  ActionEvent
+     */
     public void actionPerformed(ActionEvent e) {
         clearErrors();
         if (Objects.equals(toggle, "exact")) {
@@ -175,6 +218,10 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         }
     }
 
+    /*
+    Performs an exact query search on the database. Utilizes a HashMap internally to retrieve data.
+    @param name  User input used for search
+     */
     private void pokemonExactQuery(String name){
         if (checkName(name)) {
             lblError.setVisible(false);
@@ -192,6 +239,11 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         }
     }
 
+    /*
+    Performs a range query on the database.  Utilizes a TreeMap internally to retrieve data.
+    @param num1  min HP user input
+    @param num2  max HP user input
+     */
     private void pokemonRangeQuery(int num1, int num2){
         clearRows();
         DatabaseEngine.Pokemon pokemon;
@@ -215,12 +267,19 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         }
     }
 
+    /*
+    Adds a row to the text box on the GUI that holds all the retrieved Pokemon information.
+    @param pokemon  Object containing all relevant data pertaining to the actual base Pokemon from the games.
+     */
     private void addRow(DatabaseEngine.Pokemon pokemon){
         tableModel.addRow(new Object[]{pokemon.number(), pokemon.name(), pokemon.type(),
                 pokemon.total(), pokemon.hp(), pokemon.attack(), pokemon.defense(), pokemon.spAttack(),
                 pokemon.spDefense(), pokemon.speed(), pokemon.generation(), pokemon.legendary()});
     }
 
+    /*
+    Populates and loads data into the TreeMap.
+     */
     private void populateTree() {
         indexTree = new TreeMap<>();
         List<DatabaseEngine.Pokemon> pokemonList = DatabaseEngine.readEntireBinaryFile(dataFileLocation);
@@ -239,6 +298,9 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         }
     }
 
+    /*
+    Populates and loads all data into the HashMap.
+     */
     private void populateHashMap(){
         pokemonIndex = new DatabaseHashMap<>();
         List<DatabaseEngine.Pokemon> pokemonList = DatabaseEngine.readEntireBinaryFile(dataFileLocation);
