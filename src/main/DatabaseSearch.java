@@ -2,7 +2,6 @@ package main;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
@@ -19,7 +18,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
     DefaultTableModel tableModel;
     JScrollPane scroll;
     JButton b;
-    JLabel label, label1, label2, errorName, errorNum, errorNumSize;
+    JLabel label, label1, label2, lblError, errorNum;
     final JComboBox<String> cb;
     Map<String, Integer> pokemonIndex;
     TreeMap<Integer, List<Integer>> indexTree;
@@ -28,7 +27,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
     DatabaseSearch() {
         f = new JFrame("Pokedex DataBase");
 
-        String[] columns = {"#","NAME","TYPE","TOTAL","HP","ATTACK","DEFENSE","spATTACK","spDEFENSE","SPEED","GENERATION","LEGENDARY"};
+        String[] columns = {"NUM","NAME","TYPE","TOTAL","HP","ATK","DEF","spATK","spDEF","SPEED","GEN","LEG"};
         tableModel = new DefaultTableModel(columns, 0);
         table = new JTable(tableModel);
         scroll = new JScrollPane(table);
@@ -40,7 +39,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
 
         String[] searches = {"Exact Match","Range Query"};
         cb = new JComboBox<>(searches);
-        cb.setBounds(50,100,90,20);
+        cb.setBounds(50,100,100,20);
 
         tf = new JTextField();
         tf.setBounds(85,75,150,20);
@@ -52,7 +51,9 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         tf1.setBounds(50,75,100,20);
         tf2.setBounds(200,75,100,20);
         tf1.setToolTipText("Enter 20");
+        tf1.addActionListener(this);
         tf2.setToolTipText("Enter 50");
+        tf2.addActionListener(this);
 
         label = new JLabel("Enter Pokemon Name");
         label.setBounds(97, 55, 150, 20);
@@ -63,18 +64,15 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         label2 = new JLabel("Enter max HP");
         label2.setBounds(220, 55, 150, 20);
 
-        errorName = new JLabel("Be sure to capitalize the name!");
-        errorName.setBounds(95, 40, 200, 20);
+        lblError = new JLabel();
+        lblError.setBounds(95, 40, 250, 20);
 
-        errorNum = new JLabel("Be sure to enter integer values!");
+        errorNum = new JLabel();
         errorNum.setBounds(95, 40, 200, 20);
-
-        errorNumSize = new JLabel("Be sure max HP is higher than min HP!");
-        errorNumSize.setBounds(80, 40, 240, 20);
 
         f.add(cb); f.add(b); f.add(scroll); f.add(tf1); f.add(tf2); f.add(tf);
         f.add(label); f.add(label1); f.add(label2);
-        f.add(errorName); f.add(errorNum); f.add(errorNumSize);
+        f.add(lblError); f.add(errorNum);
         f.setLayout(null);
         f.setSize(650,450);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -83,9 +81,8 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         label.setVisible(true);
         label1.setVisible(false);
         label2.setVisible(false);
-        errorName.setVisible(false);
+        lblError.setVisible(false);
         errorNum.setVisible(false);
-        errorNumSize.setVisible(false);
 
         comboBoxAction();
 
@@ -108,7 +105,7 @@ public class DatabaseSearch extends JFrame implements ActionListener {
             tf.setVisible(true);
             tf1.setVisible(false);
             tf2.setVisible(false);
-            tableModel.setRowCount(0);
+            clearRows();
             toggle = "exact";
             revalidate();
             repaint();
@@ -119,11 +116,15 @@ public class DatabaseSearch extends JFrame implements ActionListener {
             tf1.setVisible(true);
             tf2.setVisible(true);
             tf.setVisible(false);
-            tableModel.setRowCount(0);
+            clearRows();
             toggle = "range";
             revalidate();
             repaint();
         }
+    }
+
+    private void clearRows(){
+        tableModel.setRowCount(0);
     }
 
     public boolean checkName(String name) {
@@ -139,26 +140,18 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         if (num1<num2) {
             return true;
         } else {
-            setErrorNumSize();
+            setError("Be sure max HP is higher than min HP!");
         } return false;
     }
 
-    public void setErrorName() {
-        errorName.setVisible(true);
-    }
-
-    public void setErrorNum() {
-        errorNum.setVisible(true);
-    }
-
-    public void setErrorNumSize() {
-        errorNumSize.setVisible(true);
+    public void setError(String message) {
+        lblError.setText(message);
+        lblError.setVisible(true);
     }
 
     public void clearErrors() {
-        errorName.setVisible(false);
+        lblError.setVisible(false);
         errorNum.setVisible(false);
-        errorNumSize.setVisible(false);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -166,41 +159,66 @@ public class DatabaseSearch extends JFrame implements ActionListener {
         if (Objects.equals(toggle, "exact")) {
             try {
                 String name = tf.getText();
-                if (checkName(name)) {
-                    errorName.setVisible(false);
-                    int number = pokemonIndex.get(name);
-                    DatabaseEngine.Pokemon pokemon = readBinaryFile(dataFileLocation, number);
-                    tableModel.addRow(new Object[]{pokemon.number(), pokemon.name(), pokemon.type(),
-                            pokemon.total(), pokemon.hp(), pokemon.attack(), pokemon.defense(), pokemon.spAttack(),
-                            pokemon.spDefense(), pokemon.speed(), pokemon.generation(), pokemon.legendary()});
-                } else {
-                    setErrorName();
-                }
+                pokemonExactQuery(name);
             } catch (Exception ex) {
                 System.out.println(ex);
+
             }
         } else if (Objects.equals(toggle, "range")) {
             try {
                 int hp1 = Integer.parseInt(tf1.getText());
                 int hp2 = Integer.parseInt(tf2.getText());
-                DatabaseEngine.Pokemon pokemon;
-                if (checkNum(hp1, hp2)) {
-                    for(int i=hp1;i<=hp2;i++){
-                        if(indexTree.get(i) != null){
-                            List<Integer> numbers = indexTree.get(i);
-                            for (int number : numbers){
-                                pokemon = readBinaryFile(dataFileLocation, number);
-                                tableModel.addRow(new Object[]{pokemon.number(), pokemon.name(), pokemon.type(),
-                                        pokemon.total(), pokemon.hp(), pokemon.attack(), pokemon.defense(), pokemon.spAttack(),
-                                        pokemon.spDefense(), pokemon.speed(), pokemon.generation(), pokemon.legendary()});
-                            }
+                pokemonRangeQuery(hp1, hp2);
+            } catch (NumberFormatException ex) {
+                setError("Be sure to enter integer values!");
+            }
+        }
+    }
+
+    private void pokemonExactQuery(String name){
+        if (checkName(name)) {
+            lblError.setVisible(false);
+            if (!pokemonIndex.containsKey(name)) {
+                setError("Pokemon does not exist, try Charizard!");
+                return;
+            }
+            int number = pokemonIndex.get(name);
+            DatabaseEngine.Pokemon pokemon = readBinaryFile(dataFileLocation, number);
+            if (pokemon != null) {
+                addRow(pokemon);
+            }
+        } else {
+            setError("Be sure to capitalize the name!");
+        }
+    }
+
+    private void pokemonRangeQuery(int num1, int num2){
+        clearRows();
+        DatabaseEngine.Pokemon pokemon;
+        boolean rowAdded = false;
+        if (checkNum(num1, num2)) {
+            for(int i=num1;i<=num2;i++){
+                if (indexTree.containsKey(i)) {
+                    List<Integer> numbers = indexTree.get(i);
+                    for (int number : numbers) {
+                        pokemon = readBinaryFile(dataFileLocation, number);
+                        if (pokemon != null) {
+                            rowAdded = true;
+                            addRow(pokemon);
                         }
                     }
                 }
-            } catch (NumberFormatException ex) {
-                setErrorNum();
+            }
+            if (!rowAdded){
+                setError("No Pokemon with these HP values!");
             }
         }
+    }
+
+    private void addRow(DatabaseEngine.Pokemon pokemon){
+        tableModel.addRow(new Object[]{pokemon.number(), pokemon.name(), pokemon.type(),
+                pokemon.total(), pokemon.hp(), pokemon.attack(), pokemon.defense(), pokemon.spAttack(),
+                pokemon.spDefense(), pokemon.speed(), pokemon.generation(), pokemon.legendary()});
     }
 
     private void populateTree() {
