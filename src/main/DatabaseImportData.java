@@ -6,7 +6,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ * This class reads the data from the CSV and prepares it to convert into binary.
+ * @author Josiah Kowalski and Michael Nasuti
+ * @version 0.1
+ */
 public class DatabaseImportData {
+    
+    /*
+    Reads entire CSV file.
+    @param path  Filepath for file reader to use.
+    @return fileData  A list containing all data read from the CSV.
+     */
     public static List<String> readFile(String path){
         List<String> fileData = new ArrayList<>();
         try (FileReader fr = new FileReader(path);
@@ -23,12 +34,4 @@ public class DatabaseImportData {
         }
         return fileData;
     }
-
-    public static void writeBinary(List<String> fileData){
-        DatabaseEngine.writeBinaryFile("src/main/pokemon.data", fileData);
-    }
-
-    /*public static void main(String[] args) {
-        writeBinary(readFile("src/main/Pokemon.csv"));
-    }*/
 }
